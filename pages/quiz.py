@@ -400,15 +400,6 @@ def calculate_score(answers, questions, a_value, b_value, c_value):
 CSV_PATH = "quiz_results.csv"
 
 def load_results(csv_path=CSV_PATH):
-    if os.path.exists(csv_path):
-        try:
-            df = pd.read_csv(csv_path)
-        except pd.errors.EmptyDataError:
-            df = pd.DataFrame()
-
-    else:
-        df = pd.DataFrame()
-
     required_cols = [
         "AttemptID",
         "Name",
@@ -417,8 +408,6 @@ def load_results(csv_path=CSV_PATH):
         "Score",
         "IsAnonymous",
         "CompletedAt",
-
-         # Brevo send metadata
         "BrevoMessageID",
         "BrevoUUID",
         "BrevoTags",
@@ -431,9 +420,45 @@ def load_results(csv_path=CSV_PATH):
         "BrevoWebhookID",
     ]
 
+    text_cols = [
+        "AttemptID",
+        "Name",
+        "Email",
+        "Gender",
+        "CompletedAt",
+        "BrevoMessageID",
+        "BrevoUUID",
+        "BrevoTags",
+        "BrevoSubject",
+        "BrevoStatus",
+        "BrevoEvent",
+        "BrevoEventAt",
+        "BrevoReason",
+        "BrevoWebhookEmail",
+        "BrevoWebhookID",
+    ]
+
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+        except pd.errors.EmptyDataError:
+            df = pd.DataFrame(columns=required_cols)
+    else:
+        df = pd.DataFrame(columns=required_cols)
+
     for col in required_cols:
         if col not in df.columns:
             df[col] = ""
+
+    # Force text columns to object/string-safe dtype
+    for col in text_cols:
+        df[col] = df[col].astype("object")
+
+    # Keep Score numeric where possible
+    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+
+    # Keep IsAnonymous flexible / boolean-like
+    df["IsAnonymous"] = df["IsAnonymous"].astype("object")
 
     return df
 
@@ -485,9 +510,12 @@ def save_attempt(
 
     if len(match_index) > 0:
         i = match_index[0]
+
         for key, value in new_row.items():
-            # only overwrite with a non-empty value, except for the core quiz fields
             if key in ["AttemptID", "Name", "Email", "Gender", "Score", "IsAnonymous", "CompletedAt"] or value not in ["", None]:
+                # make sure non-score columns can accept strings
+                if key != "Score":
+                    df[key] = df[key].astype("object")
                 df.at[i, key] = value
     else:
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
