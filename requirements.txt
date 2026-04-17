@@ -1,0 +1,5 @@
+streamlit
+pandas
+sib-api-v3-sdk
+gspread
+google-auth
