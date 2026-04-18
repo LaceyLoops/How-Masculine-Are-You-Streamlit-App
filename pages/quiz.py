@@ -1010,9 +1010,10 @@ else:
                                     st.success("Your result has been sent to your email! Check spam/promotions if you don't see it.")
 
                                     st.markdown("---")
-                            if st.button("Retake Quiz"):
-                                reset_quiz()
-                                st.rerun()
+                                if st.button("Retake Quiz"):
+                                    reset_quiz()
+                                    st.rerun()
+
                             else:
                                 st.error(f"Email failed: {result}")
 
