@@ -578,7 +578,7 @@ def render_results(total_score, gender):
     quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
     share_links = build_share_links(quiz_url, total_score)
 
-    st.success("Quiz complete!")
+    # st.success("Quiz complete!")
     # st.subheader(title)
     # st.write(f"**Your score is:** {total_score}")
     # st.write(text)
@@ -596,8 +596,8 @@ def render_results(total_score, gender):
 
 
     st.markdown("### Want to Learn More About Yourself (And everyone else)?")
-    st.markdown("Get **[the science-based book](https://amzn.to/4cuanIh)** behind your results")
-    st.caption("As an Amazon Associate, I earn from qualifying purchases.")
+    # st.markdown("Get **[the science-based book](https://amzn.to/4cuanIh)** behind your results")
+    # st.caption("As an Amazon Associate, I earn from qualifying purchases.")
 
 
 
@@ -1078,3 +1078,4 @@ def update_attempt_from_webhook(
                
 #Marketing The Book
 st.markdown("Get **[the science-based book](https://amzn.to/4cuanIh)** behind this quiz")
+st.caption("As an Amazon Associate, I earn from qualifying purchases.")
