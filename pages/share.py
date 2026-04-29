@@ -4,7 +4,7 @@ import urllib.parse
 
 st.set_page_config(layout="centered", page_title="Share the Quiz")
 
-APP_URL = "https://your-app-url.streamlit.app"
+APP_URL = "https://how-masculine-feminine-are-you.streamlit.app/"
 
 def build_share_links(quiz_url):
     share_text = "This quiz read me… I didn’t expect this 😭 you need to try this"
@@ -72,7 +72,7 @@ def render_share_buttons(share_links):
     """
     components.html(buttons_html, height=70)
 
-quiz_url = "https://your-app-url.streamlit.app"
+quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
 share_links = build_share_links(APP_URL)
 
 st.title("Share the Quiz")

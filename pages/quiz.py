@@ -669,7 +669,7 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
     
     title, text, extra = get_interpretation(total_score)
 
-    quiz_url = "https://your-app-url.streamlit.app"
+    quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
     ##share_links = build_share_links(quiz_url, total_score)
 
     configuration = sib_api_v3_sdk.Configuration()
