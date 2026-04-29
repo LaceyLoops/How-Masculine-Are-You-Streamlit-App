@@ -575,7 +575,7 @@ def reset_quiz(change_gender=False):
 
 def render_results(total_score, gender):
     title, text, extra = get_interpretation(total_score)
-    quiz_url = "https://your-app-url.streamlit.app"
+    quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
     share_links = build_share_links(quiz_url, total_score)
 
     st.success("Quiz complete!")
@@ -679,7 +679,7 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
         sib_api_v3_sdk.ApiClient(configuration)
     )
 
-    subject = "Your Result..."
+    subject = "Here’s your result "
     tags = ["quiz-result", "streamlit-quiz"]
 
     if attempt_id:
@@ -698,7 +698,7 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
         {text}</p>
         <p>{extra}</p>
         {f"<p><strong>{comparison_message}</strong></p>" if comparison_message else ""}
-        <p>If you’re curious to understand yourself/the other gender more, here's the book the quiz is from <br><a href="https://your-app-url.streamlit.app/explore">https://your-app-url.streamlit.app/explore</a></p>
+        <p>If you’re curious to understand yourself/the other gender more, here's the book the quiz is from <br><a href="https://how-masculine-feminine-are-you.streamlit.app/explore">https://how-masculine-feminine-are-you.streamlit.app/explore</a></p>
         <p>If you'd like to share the quiz with friends, <br> <a href="https://your-app-url.streamlit.app/share">https://your-app-url.streamlit.app/share</a></p>
         <p>Were you surprised by your results? Let me know, I’d love to hear what you think</p>
         <p>Regards,</p>
@@ -1022,6 +1022,7 @@ else:
             # Email was sent successfully in required-email mode, now show the result
             st.success("Your result has been sent to your email! Check spam/promotions if you don't see it.")
             st.markdown("---")
+            render_share_buttons()
             if st.button("Retake Quiz"):
                 reset_quiz()
                 st.rerun()
