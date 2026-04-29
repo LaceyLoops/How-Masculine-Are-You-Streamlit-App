@@ -699,7 +699,7 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
         <p>{extra}</p>
         {f"<p><strong>{comparison_message}</strong></p>" if comparison_message else ""}
         <p>If you’re curious to understand yourself/the other gender more, here's the book the quiz is from <br><a href="https://how-masculine-feminine-are-you.streamlit.app/explore">https://how-masculine-feminine-are-you.streamlit.app/explore</a></p>
-        <p>If you'd like to share the quiz with friends, <br> <a href="https://your-app-url.streamlit.app/share">https://your-app-url.streamlit.app/share</a></p>
+        <p>If you'd like to share the quiz with friends, <br> <a href="https://how-masculine-feminine-are-you.streamlit.app/share">https://how-masculine-feminine-are-you.streamlit.app/share</a></p>
         <p>Were you surprised by your results? Let me know, I’d love to hear what you think</p>
         <p>Regards,</p>
         <p>Lacey</p>
@@ -721,10 +721,10 @@ Your score: {total_score}
 {comparison_message if comparison_message else ""}
 
 If you’re curious to understand yourself more:
-https://your-app-url.streamlit.app/explore
+https://how-masculine-feminine-are-you.streamlit.app/explore
 
 And if you feel like sharing it with friends:
-https://your-app-url.streamlit.app/share
+https://how-masculine-feminine-are-you.streamlit.app/share
 
 Were you surprised by your results? I’d love to hear what you think.
 
