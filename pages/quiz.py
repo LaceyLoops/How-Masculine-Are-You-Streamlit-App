@@ -679,35 +679,28 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
         sib_api_v3_sdk.ApiClient(configuration)
     )
 
-    subject = "Your Masculine/Feminine Thinking Quiz Result is Here!"
+    subject = "Your Result..."
     tags = ["quiz-result", "streamlit-quiz"]
 
     if attempt_id:
         tags.append(f"attempt-{attempt_id}")
-
-    preheader = "👀 did You expect this? This is interesting...                                                                      "
     
     html_content=f"""
     <html>
-      <body>
-        <div style="display:none!important;visibility:hidden;opacity:0;color:transparent;
-        max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;">
-        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-        </div>
+      <body style="font-family: Arial, sans-serif; line-height:1.5; color:#000;">
 
-        <h2>Hi {name},</h2>
+        <p>Hi {name},</p>
 
-        {preheader}
+        <p>This is interesting 👀. Did you expect this?</p>
 
         <p>Your score is: <strong>{total_score}</strong></p>
-        <h3>{title}</h3>
-        <p>{text}</p>
+        <p><strong>{title}</strong><br>
+        {text}</p>
         <p>{extra}</p>
         {f"<p><strong>{comparison_message}</strong></p>" if comparison_message else ""}
-        <h3>Want to understand yourself more? Get <strong><a href="https://your-app-url.streamlit.app/explore">the book this science based quiz is from</a></strong></h3>
-        <p><strong><a href="https://your-app-url.streamlit.app/share">Share the quiz with friends</a></strong></p>
-        <p>Were you surprised by your results? Let me know, I'd love to hear your thoughts</p>
+        <p>If you’re curious to understand yourself/the other gender more, here's the book the quiz is from <br><a href="https://your-app-url.streamlit.app/explore">https://your-app-url.streamlit.app/explore</a></p>
+        <p>If you'd like to share the quiz with friends, <br> <a href="https://your-app-url.streamlit.app/share">https://your-app-url.streamlit.app/share</a></p>
+        <p>Were you surprised by your results? Let me know, I’d love to hear what you think</p>
         <p>Regards,</p>
         <p>Lacey</p>
       </body>
@@ -716,23 +709,28 @@ def send_email(receiver_email, name, total_score, comparison_message=None, attem
     text_content = f"""
 Hi {name},
 
-Your result is ready.
+This is interesting — did you expect this?
+
+Your score: {total_score}
 
 {title}
 {text}
+
 {extra}
 
 {comparison_message if comparison_message else ""}
 
-Explore more:
+If you’re curious to understand yourself more:
 https://your-app-url.streamlit.app/explore
 
-Share:
+And if you feel like sharing it with friends:
 https://your-app-url.streamlit.app/share
+
+Were you surprised by your results? I’d love to hear what you think.
 
 Regards,
 Lacey
-    """.strip()
+""".strip()
 
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=[{"email": receiver_email, "name": name}],
@@ -950,7 +948,10 @@ else:
                 submit_label = "Send me my result"
 
             if st.session_state.email_sent:
-                st.success("Your results have already been sent to your email.")
+                st.success("Your results have been sent to your email.")
+                st.markdown("### Share the quiz with friends")
+                render_share_buttons()
+                
             else:
                 with st.form("optional_email_form"):
                     name = st.text_input("First name")
@@ -1005,7 +1006,7 @@ else:
                                 )
 
                                 if comparison_message:
-                                    st.success("Your result and comparison have been sent to your email.")
+                                    st.success("Your result and comparison have been sent to your email. Check spam/promotions if you don't see it.")
                                 else:
                                     st.success("Your result has been sent to your email! Check spam/promotions if you don't see it.")
 
