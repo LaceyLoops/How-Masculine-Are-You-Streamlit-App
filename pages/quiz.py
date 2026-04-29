@@ -579,10 +579,10 @@ def render_results(total_score, gender):
     share_links = build_share_links(quiz_url, total_score)
 
     st.success("Quiz complete!")
-    st.subheader(title)
-    st.write(f"**Your score is:** {total_score}")
-    st.write(text)
-    st.write(extra)
+    # st.subheader(title)
+    # st.write(f"**Your score is:** {total_score}")
+    # st.write(text)
+    # st.write(extra)
 
     st.markdown("### Share the quiz with friends")
     render_share_buttons(share_links)
@@ -1022,7 +1022,7 @@ else:
             # Email was sent successfully in required-email mode, now show the result
             st.success("Your result has been sent to your email! Check spam/promotions if you don't see it.")
             st.markdown("---")
-            render_share_buttons()
+            render_results(total_score, gender)
             if st.button("Retake Quiz"):
                 reset_quiz()
                 st.rerun()
