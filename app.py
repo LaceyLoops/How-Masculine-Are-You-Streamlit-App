@@ -12,9 +12,9 @@ quiz = st.Page(
 
 share = st.Page(
     "pages/share.py",
-    title="Learn More",
+    title="Share",
     icon="📚",
-    url_path="learn-more"
+    url_path="share"
 )
 
 explore = st.Page(
@@ -32,7 +32,7 @@ admin = st.Page(
 )
 
 pg = st.navigation(
-    [quiz, share,explore, admin],
+    [quiz, share, explore, admin],
     position="hidden"
 )
 
