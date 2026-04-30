@@ -13,7 +13,7 @@ quiz = st.Page(
 share = st.Page(
     "pages/share.py",
     title="Share",
-    icon="📚",
+    icon="📢",
     url_path="share"
 )
 
