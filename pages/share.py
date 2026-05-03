@@ -35,7 +35,7 @@ def build_share_links(quiz_url):
 
 def render_share_buttons(share_links):
     buttons_html = f"""
-        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;margin-bottom:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;margin-bottom:10px;justify-content:flex-start;">
 
             <a href="{share_links['whatsapp']}" target="_blank"
                style="background:#25D366;color:white;padding:10px 16px;border-radius:8px;
@@ -70,7 +70,7 @@ def render_share_buttons(share_links):
 
         </div>
     """
-    components.html(buttons_html, height=70)
+    components.html(buttons_html, height=120)
 
 quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
 share_links = build_share_links(APP_URL)

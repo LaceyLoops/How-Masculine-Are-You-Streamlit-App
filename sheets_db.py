@@ -40,7 +40,7 @@ COLUMNS = [
     "BrevoWebhookID",
 ]
 
-
+@st.cache_resource
 def get_sheet():
     """Return the first worksheet of the results spreadsheet."""
     creds = Credentials.from_service_account_info(
