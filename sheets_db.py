@@ -9,6 +9,8 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 from datetime import datetime, timezone, timedelta
 
+EAT = timezone(timedelta(hours=3))
+
 SHEET_ID = "1gXfI_jZ7YAbaVz691HJrXkFKkILZ2nBeireP3dAWxg0"
 
 SCOPES = [
@@ -109,7 +111,7 @@ def save_attempt(
         accurate_percentile if accurate_percentile is not None else "",
         rough_percentile if rough_percentile is not None else "",
         str(clean_email == ""),   # IsAnonymous
-        datetime.now(tz=timezone(timedelta(hours=3))).isoformat(timespec="seconds"),
+        datetime.now(timezone.utc).astimezone(EAT).isoformat(timespec="seconds"),
         str(brevo_message_id),
         str(brevo_uuid),
         str(brevo_tags),
