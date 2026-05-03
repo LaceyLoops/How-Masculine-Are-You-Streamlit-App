@@ -1,8 +1,9 @@
 import streamlit as st
-import os
 import pandas as pd
+from sheets_db import load_results, delete_all_results
 
 st.set_page_config(layout="centered", page_title="Admin Dashboard")
+
 
 def check_password():
     if "admin_authenticated" not in st.session_state:
@@ -22,34 +23,17 @@ def check_password():
 
     return False
 
+
 if not check_password():
     st.stop()
 
-CSV_PATH = "quiz_results.csv"
-
 st.title("Admin Dashboard")
 
-if not os.path.exists(CSV_PATH):
+df = load_results()
+
+if df.empty:
     st.warning("No quiz results found yet.")
     st.stop()
-
-df = pd.read_csv(CSV_PATH)
-
-required_cols = [
-    "AttemptID",
-    "Name",
-    "Email",
-    "Gender",
-    "Score",
-    "IsAnonymous",
-    "CompletedAt",
-    "RoughPercentileAllAttempts",
-    "AccuratePercentileVerified",
-]
-
-for col in required_cols:
-    if col not in df.columns:
-        df[col] = ""
 
 df["Email"] = df["Email"].fillna("").astype(str).str.strip().str.lower()
 df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
@@ -60,10 +44,15 @@ anonymous_df = df[df["Email"] == ""].copy()
 
 verified_latest = pd.DataFrame()
 if not verified_df.empty:
-    verified_latest = verified_df.sort_values("CompletedAt").groupby("Email", as_index=False).tail(1)
+    verified_latest = (
+        verified_df
+        .sort_values("CompletedAt")
+        .groupby("Email", as_index=False)
+        .tail(1)
+    )
 
+# ── Top-level stats ──────────────────────────────────────────────────────────
 st.subheader("Top-level stats")
-
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Total attempts", len(df))
 col2.metric("Anonymous attempts", len(anonymous_df))
@@ -71,8 +60,9 @@ col3.metric("Verified attempts", len(verified_df))
 col4.metric("Verified users (latest)", len(verified_latest))
 
 st.markdown("---")
-st.subheader("Score stats")
 
+# ── Score stats ───────────────────────────────────────────────────────────────
+st.subheader("Score stats")
 score_df = df.dropna(subset=["Score"]).copy()
 
 if not score_df.empty:
@@ -84,8 +74,9 @@ else:
     st.info("No score data yet.")
 
 st.markdown("---")
-st.subheader("By gender")
 
+# ── By gender ─────────────────────────────────────────────────────────────────
+st.subheader("By gender")
 if not score_df.empty:
     gender_summary = (
         score_df.groupby("Gender")
@@ -103,8 +94,9 @@ else:
     st.info("No gender summary available yet.")
 
 st.markdown("---")
-st.subheader("Verified latest users only")
 
+# ── Verified latest users ─────────────────────────────────────────────────────
+st.subheader("Verified latest users only")
 if not verified_latest.empty:
     verified_gender_summary = (
         verified_latest.groupby("Gender")
@@ -122,47 +114,43 @@ else:
     st.info("No verified users yet.")
 
 st.markdown("---")
+
+# ── Recent attempts ───────────────────────────────────────────────────────────
 st.subheader("Recent attempts")
-
 recent_cols = [
-    "CompletedAt",
-    "AttemptID",
-    "Name",
-    "Email",
-    "Gender",
-    "Score",
-    "IsAnonymous",
-    "RoughPercentileAllAttempts",
-    "AccuratePercentileVerified",
+    "CompletedAt", "AttemptID", "Name", "Email", "Gender",
+    "Score", "IsAnonymous", "RoughPercentileAllAttempts", "AccuratePercentileVerified",
 ]
-
-recent_df = df[recent_cols].sort_values("CompletedAt", ascending=False)
-st.dataframe(recent_df, use_container_width=True)
+# Only show columns that actually exist in the df
+recent_cols = [c for c in recent_cols if c in df.columns]
+st.dataframe(
+    df[recent_cols].sort_values("CompletedAt", ascending=False),
+    use_container_width=True,
+)
 
 st.markdown("---")
-st.subheader("Latest verified users")
 
+# ── Latest verified users ─────────────────────────────────────────────────────
+st.subheader("Latest verified users")
 if not verified_latest.empty:
     latest_cols = [
-        "CompletedAt",
-        "AttemptID",
-        "Name",
-        "Email",
-        "Gender",
-        "Score",
-        "AccuratePercentileVerified",
+        "CompletedAt", "AttemptID", "Name", "Email",
+        "Gender", "Score", "AccuratePercentileVerified",
     ]
+    latest_cols = [c for c in latest_cols if c in verified_latest.columns]
     st.dataframe(
         verified_latest[latest_cols].sort_values("CompletedAt", ascending=False),
-        use_container_width=True
+        use_container_width=True,
     )
 else:
     st.info("No verified user records yet.")
 
-confirm = st.checkbox("I understand this will permanently delete all quiz data")
+st.markdown("---")
 
+# ── Danger zone ───────────────────────────────────────────────────────────────
+st.subheader("Danger zone")
+confirm = st.checkbox("I understand this will permanently delete all quiz data from Google Sheets")
 if confirm and st.button("Delete all quiz data"):
-    if os.path.exists("quiz_results.csv"):
-        os.remove("quiz_results.csv")
-    st.success("quiz_results.csv deleted.")
+    delete_all_results()
+    st.success("All data rows deleted. Header row preserved.")
     st.rerun()

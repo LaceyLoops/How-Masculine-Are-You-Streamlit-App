@@ -7,13 +7,14 @@
  
 import streamlit as st
 import streamlit.components.v1 as components
-import os
-import pandas as pd
 import urllib.parse
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
 import uuid
 from datetime import datetime
+
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
+from sheets_db import save_attempt, get_verified_stats
 
 st.set_page_config(layout="centered")
 
@@ -102,7 +103,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-progress_placeholder = st.empty()
+#progress_placeholder = st.empty()
 
 if gender:
 
@@ -350,7 +351,6 @@ def get_interpretation(score):
 
 def build_share_links(quiz_url, total_score):
     share_text = f"This quiz read me… I didn’t expect this\n😭 you need to try this"
-                #"I just took this Masculine/Feminine Thinking Quiz. Take it here:"
 
     encoded_text = urllib.parse.quote(share_text)
     encoded_url = urllib.parse.quote(quiz_url)
@@ -397,130 +397,137 @@ def calculate_score(answers, questions, a_value, b_value, c_value):
     return total_score
 
 
-CSV_PATH = "quiz_results.csv"
+# @st.cache_data(ttl=60)
+# def load_results(csv_path=CSV_PATH):
+    
+#     required_cols = [
+#         "AttemptID",
+#         "Name",
+#         "Email",
+#         "Gender",
+#         "Score",
+#         "IsAnonymous",
+#         "CompletedAt",
+#         "BrevoMessageID",
+#         "BrevoUUID",
+#         "BrevoTags",
+#         "BrevoSubject",
+#         "BrevoStatus",
+#         "BrevoEvent",
+#         "BrevoEventAt",
+#         "BrevoReason",
+#         "BrevoWebhookEmail",
+#         "BrevoWebhookID",
+#     ]
 
-def load_results(csv_path=CSV_PATH):
-    required_cols = [
-        "AttemptID",
-        "Name",
-        "Email",
-        "Gender",
-        "Score",
-        "IsAnonymous",
-        "CompletedAt",
-        "BrevoMessageID",
-        "BrevoUUID",
-        "BrevoTags",
-        "BrevoSubject",
-        "BrevoStatus",
-        "BrevoEvent",
-        "BrevoEventAt",
-        "BrevoReason",
-        "BrevoWebhookEmail",
-        "BrevoWebhookID",
-    ]
+#     text_cols = [
+#         "AttemptID",
+#         "Name",
+#         "Email",
+#         "Gender",
+#         "CompletedAt",
+#         "BrevoMessageID",
+#         "BrevoUUID",
+#         "BrevoTags",
+#         "BrevoSubject",
+#         "BrevoStatus",
+#         "BrevoEvent",
+#         "BrevoEventAt",
+#         "BrevoReason",
+#         "BrevoWebhookEmail",
+#         "BrevoWebhookID",
+#     ]
 
-    text_cols = [
-        "AttemptID",
-        "Name",
-        "Email",
-        "Gender",
-        "CompletedAt",
-        "BrevoMessageID",
-        "BrevoUUID",
-        "BrevoTags",
-        "BrevoSubject",
-        "BrevoStatus",
-        "BrevoEvent",
-        "BrevoEventAt",
-        "BrevoReason",
-        "BrevoWebhookEmail",
-        "BrevoWebhookID",
-    ]
+#     if os.path.exists(csv_path):
+#         try:
+#             df = pd.read_csv(csv_path)
+#         except pd.errors.EmptyDataError:
+#             df = pd.DataFrame(columns=required_cols)
+#     else:
+#         df = pd.DataFrame(columns=required_cols)
 
-    if os.path.exists(csv_path):
-        try:
-            df = pd.read_csv(csv_path)
-        except pd.errors.EmptyDataError:
-            df = pd.DataFrame(columns=required_cols)
-    else:
-        df = pd.DataFrame(columns=required_cols)
+#     for col in required_cols:
+#         if col not in df.columns:
+#             df[col] = ""
 
-    for col in required_cols:
-        if col not in df.columns:
-            df[col] = ""
+#     # Force text columns to object/string-safe dtype
+#     for col in text_cols:
+#         df[col] = df[col].astype("object")
 
-    # Force text columns to object/string-safe dtype
-    for col in text_cols:
-        df[col] = df[col].astype("object")
+#     # Keep Score numeric where possible
+#     df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
 
-    # Keep Score numeric where possible
-    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+#     # Keep IsAnonymous flexible / boolean-like
+#     df["IsAnonymous"] = df["IsAnonymous"].astype("object")
 
-    # Keep IsAnonymous flexible / boolean-like
-    df["IsAnonymous"] = df["IsAnonymous"].astype("object")
+#     return df
 
-    return df
+# # 🔄 Cache invalidation helper
+# def invalidate_results_cache():
+#     load_results.clear()
+#     get_verified_stats.clear()
 
+# def save_attempt(
+#     attempt_id, 
+#     name="", 
+#     email="", 
+#     gender="", 
+#     score=None, 
+#     accurate_percentile=None,    
+#     brevo_message_id="",
+#     brevo_uuid="",
+#     brevo_tags="",
+#     brevo_subject="",
+#     brevo_status="",
+#     brevo_event="",
+#     brevo_event_at="",
+#     brevo_reason="",
+#     brevo_webhook_email="",
+#     brevo_webhook_id="",
+#     csv_path=CSV_PATH
+# ):
+#     df = load_results(csv_path)
 
-def save_attempt(
-    attempt_id, 
-    name="", 
-    email="", 
-    gender="", 
-    score=None,     
-    brevo_message_id="",
-    brevo_uuid="",
-    brevo_tags="",
-    brevo_subject="",
-    brevo_status="",
-    brevo_event="",
-    brevo_event_at="",
-    brevo_reason="",
-    brevo_webhook_email="",
-    brevo_webhook_id="",
-    csv_path=CSV_PATH
-):
-    df = load_results(csv_path)
+#     clean_email = email.strip().lower()
 
-    clean_email = email.strip().lower()
+#     new_row = {
+#         "AttemptID": attempt_id,
+#         "Name": name,
+#         "Email": clean_email,
+#         "Gender": gender,
+#         "Score": score,
+#         "AccuratePercentileVerified": accurate_percentile,
+#         "IsAnonymous": clean_email == "",
+#         "CompletedAt": datetime.now().isoformat(timespec="seconds"),
 
-    new_row = {
-        "AttemptID": attempt_id,
-        "Name": name,
-        "Email": clean_email,
-        "Gender": gender,
-        "Score": score,
-        "IsAnonymous": clean_email == "",
-        "CompletedAt": datetime.now().isoformat(timespec="seconds"),
+#         "BrevoMessageID": brevo_message_id,
+#         "BrevoUUID": brevo_uuid,
+#         "BrevoTags": brevo_tags,
+#         "BrevoSubject": brevo_subject,
+#         "BrevoStatus": brevo_status,
+#         "BrevoEvent": brevo_event,
+#         "BrevoEventAt": brevo_event_at,
+#         "BrevoReason": brevo_reason,
+#         "BrevoWebhookEmail": brevo_webhook_email,
+#         "BrevoWebhookID": brevo_webhook_id,
+#     }
 
-        "BrevoMessageID": brevo_message_id,
-        "BrevoUUID": brevo_uuid,
-        "BrevoTags": brevo_tags,
-        "BrevoSubject": brevo_subject,
-        "BrevoStatus": brevo_status,
-        "BrevoEvent": brevo_event,
-        "BrevoEventAt": brevo_event_at,
-        "BrevoReason": brevo_reason,
-        "BrevoWebhookEmail": brevo_webhook_email,
-        "BrevoWebhookID": brevo_webhook_id,
-    }
+#     match_index = df.index[df["AttemptID"].astype(str) == str(attempt_id)]
 
-    match_index = df.index[df["AttemptID"].astype(str) == str(attempt_id)]
+#     if len(match_index) > 0:
+#         i = match_index[0]
 
-    if len(match_index) > 0:
-        i = match_index[0]
+#         for key, value in new_row.items():
+#             if key in ["AttemptID", "Name", "Email", "Gender", "Score", "IsAnonymous", "CompletedAt"] or value not in ["", None]:
+#                 # make sure non-score columns can accept strings
+#                 if key != "Score":
+#                     df[key] = df[key].astype("object")
+#                 df.at[i, key] = value
+#     else:
+#         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
-        for key, value in new_row.items():
-            if key in ["AttemptID", "Name", "Email", "Gender", "Score", "IsAnonymous", "CompletedAt"] or value not in ["", None]:
-                # make sure non-score columns can accept strings
-                if key != "Score":
-                    df[key] = df[key].astype("object")
-                df.at[i, key] = value
-    else:
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-
-    df.to_csv(csv_path, index=False)
+#     df.to_csv(csv_path, index=False)
+#     invalidate_results_cache()
 
 def render_share_buttons(share_links):
     buttons_html = f"""
@@ -601,68 +608,48 @@ def render_results(total_score, gender):
 
 
 
-def get_verified_pool_count(gender, csv_path=CSV_PATH):
-    df = load_results(csv_path)
 
-    if df.empty:
-        return 0
-
-    df["Email"] = df["Email"].fillna("").astype(str).str.strip().str.lower()
-    df["CompletedAt"] = pd.to_datetime(df["CompletedAt"], errors="coerce")
-
-    verified = df[df["Email"] != ""].copy()
-
-    if verified.empty:
-        return 0
-
-    latest_verified = verified.sort_values("CompletedAt").groupby("Email", as_index=False).tail(1)
-    latest_verified = latest_verified[latest_verified["Gender"] == gender]
-
-    return len(latest_verified)
-
-
-def get_verified_percentile(current_score, gender, csv_path=CSV_PATH):
-    df = load_results(csv_path)
-
-    if df.empty:
-        return None
-
-    df["Email"] = df["Email"].fillna("").astype(str).str.strip().str.lower()
-    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
-    df["CompletedAt"] = pd.to_datetime(df["CompletedAt"], errors="coerce")
-
-    verified = df[df["Email"] != ""].copy()
-    if verified.empty:
-        return None
-
-    latest_verified = verified.sort_values("CompletedAt").groupby("Email", as_index=False).tail(1)
-    latest_verified = latest_verified[
-        (latest_verified["Gender"] == gender) &
-        (latest_verified["Score"].notna())
-    ]
-
-    if len(latest_verified) < 5:
-        return None
-
-    lower_count = (latest_verified["Score"] < current_score).sum()
-    percentile = round((lower_count / len(latest_verified)) * 100)
-    return percentile
+# @st.cache_data(ttl=60)
+# def get_verified_stats(gender, current_score, csv_path=CSV_PATH):
+#     """Returns (pool_count, percentile_or_None) for the given gender."""
+#     df = load_results(csv_path)
+#     if df.empty:
+#         return 0, None
+#     df["Email"] = df["Email"].fillna("").astype(str).str.strip().str.lower()
+#     df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+#     df["CompletedAt"] = pd.to_datetime(df["CompletedAt"], errors="coerce")
+#     verified = df[df["Email"] != ""].copy()
+#     if verified.empty:
+#         return 0, None
+#     latest = (
+#         verified
+#         .sort_values("CompletedAt")
+#         .groupby("Email", as_index=False)
+#         .tail(1)
+#     )
+#     pool = latest[(latest["Gender"] == gender) & (latest["Score"].notna())]
+#     pool_count = len(pool)
+#     if pool_count < 5:
+#         return pool_count, None
+#     lower_count = (pool["Score"] < current_score).sum()
+#     percentile = round((lower_count / pool_count) * 100)
+#     return pool_count, percentile
 
     
-def build_preheader(text: str) -> str:
-    return f"""
-    <div style="
-        display:none;
-        max-height:0;
-        overflow:hidden;
-        opacity:0;
-        color:transparent;
-        mso-hide:all;
-        visibility:hidden;
-    ">
-        {text}
-    </div>
-    """
+# def build_preheader(text: str) -> str:
+#     return f"""
+#     <div style="
+#         display:none;
+#         max-height:0;
+#         overflow:hidden;
+#         opacity:0;
+#         color:transparent;
+#         mso-hide:all;
+#         visibility:hidden;
+#     ">
+#         {text}
+#     </div>
+#     """
 
 # Define the send-email function
 def send_email(receiver_email, name, total_score, comparison_message=None, attempt_id=None):
@@ -867,7 +854,7 @@ else:
 
     # Show result immediately on the same page
 
-    verified_pool_count = get_verified_pool_count(gender)
+    verified_pool_count, _ = get_verified_stats(gender, total_score)
 
     # TEMP MODE: force email before showing results
     if REQUIRE_EMAIL_FOR_RESULTS and not st.session_state.email_sent:
@@ -893,7 +880,7 @@ else:
 
                     # Keep your comparison logic alive in the background
                     if verified_pool_count >= 5:
-                        percentile = get_verified_percentile(total_score, gender)
+                        _, percentile = get_verified_stats(gender, total_score)
                         if percentile is not None:
                             if gender == "Female":
                                 comparison_message = f"Your score is higher than {percentile}% of verified women who took this quiz."
@@ -917,6 +904,7 @@ else:
                             email=email,
                             gender=gender,
                             score=total_score,
+                            accurate_percentile=percentile,
                             brevo_message_id=result.get("message_id", ""),
                             brevo_uuid=result.get("uuid", ""),
                             brevo_tags=result.get("tags", ""),
@@ -950,7 +938,7 @@ else:
             if st.session_state.email_sent:
                 st.success("Your results have been sent to your email.")
                 st.markdown("### Share the quiz with friends")
-                render_share_buttons()
+                render_share_buttons(build_share_links("https://how-masculine-feminine-are-you.streamlit.app/", total_score))
                 
             else:
                 with st.form("optional_email_form"):
@@ -967,9 +955,10 @@ else:
                             st.error("Please type your email.")
                         else:
                             comparison_message = None
+                            percentile = None
 
                             if verified_pool_count >= 5:
-                                percentile = get_verified_percentile(total_score, gender)
+                                _, percentile = get_verified_stats(gender, total_score)
                                 if percentile is not None:
                                     if gender == "Female":
                                         comparison_message = f"Your score is higher than {percentile}% of verified women who took this quiz."
@@ -993,6 +982,7 @@ else:
                                     email=email,
                                     gender=gender,
                                     score=total_score,
+                                    accurate_percentile=percentile,
                                     brevo_message_id=result.get("message_id", ""),
                                     brevo_uuid=result.get("uuid", ""),
                                     brevo_tags=result.get("tags", ""),
@@ -1010,7 +1000,7 @@ else:
                                 else:
                                     st.success("Your result has been sent to your email! Check spam/promotions if you don't see it.")
 
-                                    st.markdown("---")
+                                st.markdown("---")
                                 if st.button("Retake Quiz"):
                                     reset_quiz()
                                     st.rerun()
@@ -1024,56 +1014,57 @@ else:
             st.markdown("---")
             render_results(total_score, gender)
             if st.button("Retake Quiz"):
-                reset_quiz()
+                reset_quiz(change_gender=True)
                 st.rerun()
 
                     
-def update_attempt_from_webhook(
-    attempt_id="",
-    message_id="",
-    event="",
-    status="",
-    event_at="",
-    reason="",
-    webhook_email="",
-    webhook_id="",
-    brevo_uuid="",
-    csv_path=CSV_PATH
-):
-    df = load_results(csv_path)
+# def update_attempt_from_webhook(
+#     attempt_id="",
+#     message_id="",
+#     event="",
+#     status="",
+#     event_at="",
+#     reason="",
+#     webhook_email="",
+#     webhook_id="",
+#     brevo_uuid="",
+#     csv_path=CSV_PATH
+# ):
+#     df = load_results(csv_path)
 
-    row_index = None
+#     row_index = None
 
-    if attempt_id:
-        matches = df.index[df["AttemptID"].astype(str) == str(attempt_id)]
-        if len(matches) > 0:
-            row_index = matches[0]
+#     if attempt_id:
+#         matches = df.index[df["AttemptID"].astype(str) == str(attempt_id)]
+#         if len(matches) > 0:
+#             row_index = matches[0]
 
-    if row_index is None and message_id:
-        matches = df.index[df["BrevoMessageID"].astype(str) == str(message_id)]
-        if len(matches) > 0:
-            row_index = matches[0]
+#     if row_index is None and message_id:
+#         matches = df.index[df["BrevoMessageID"].astype(str) == str(message_id)]
+#         if len(matches) > 0:
+#             row_index = matches[0]
 
-    if row_index is None:
-        return False
+#     if row_index is None:
+#         return False
 
-    if event:
-        df.at[row_index, "BrevoEvent"] = event
-    if status:
-        df.at[row_index, "BrevoStatus"] = status
-    if event_at:
-        df.at[row_index, "BrevoEventAt"] = event_at
-    if reason:
-        df.at[row_index, "BrevoReason"] = reason
-    if webhook_email:
-        df.at[row_index, "BrevoWebhookEmail"] = webhook_email
-    if webhook_id:
-        df.at[row_index, "BrevoWebhookID"] = webhook_id
-    if brevo_uuid:
-        df.at[row_index, "BrevoUUID"] = brevo_uuid
+#     if event:
+#         df.at[row_index, "BrevoEvent"] = event
+#     if status:
+#         df.at[row_index, "BrevoStatus"] = status
+#     if event_at:
+#         df.at[row_index, "BrevoEventAt"] = event_at
+#     if reason:
+#         df.at[row_index, "BrevoReason"] = reason
+#     if webhook_email:
+#         df.at[row_index, "BrevoWebhookEmail"] = webhook_email
+#     if webhook_id:
+#         df.at[row_index, "BrevoWebhookID"] = webhook_id
+#     if brevo_uuid:
+#         df.at[row_index, "BrevoUUID"] = brevo_uuid
 
-    df.to_csv(csv_path, index=False)
-    return True
+#     df.to_csv(csv_path, index=False)
+#     invalidate_results_cache()
+#     return True
 
                
 #Marketing The Book
