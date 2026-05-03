@@ -568,7 +568,7 @@ def render_share_buttons(share_links):
 
         </div>
         """
-    components.html(buttons_html, height=120)
+    components.html(buttons_html, height=150)
 
 def reset_quiz(change_gender=False):
     st.session_state.current_question = 0

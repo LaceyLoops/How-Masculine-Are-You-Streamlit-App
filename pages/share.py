@@ -70,7 +70,7 @@ def render_share_buttons(share_links):
 
         </div>
     """
-    components.html(buttons_html, height=120)
+    components.html(buttons_html, height=150)
 
 quiz_url = "https://how-masculine-feminine-are-you.streamlit.app/"
 share_links = build_share_links(APP_URL)
