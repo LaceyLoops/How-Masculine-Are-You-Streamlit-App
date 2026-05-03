@@ -1070,4 +1070,4 @@ else:
                
 #Marketing The Book
 st.markdown("Get **[the science-based book](https://amzn.to/4cuanIh)** behind this quiz")
-st.caption("As an Amazon Associate, I earn from qualifying purchases.")
+#st.caption("As an Amazon Associate, I earn from qualifying purchases.")
