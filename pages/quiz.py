@@ -877,6 +877,7 @@ else:
                     st.error("Please type your email.")
                 else:
                     comparison_message = None
+                    percentile = None
 
                     # Keep your comparison logic alive in the background
                     if verified_pool_count >= 5:
